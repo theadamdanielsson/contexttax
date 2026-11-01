@@ -21,7 +21,7 @@ import sys
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 BIG_CONTEXT = 200_000  # where "long" starts in the report
 SUMMARY = 20_000  # tokens a fresh start would carry over
@@ -106,6 +106,20 @@ def read_session(path: str):
                         results[c.get("tool_use_id")] = (parse_time(d.get("timestamp")), result_chars(c.get("content")))
     turns.sort(key=lambda x: x.t or 0)
     return turns, uses, results
+
+
+def compact_window(settings_path: str = os.path.expanduser("~/.claude/settings.json")) -> int | None:
+    """The auto-compact window in force for new sessions, if one is set: the environment
+    variable wins over the user setting."""
+    env = os.environ.get("CLAUDE_CODE_AUTO_COMPACT_WINDOW")
+    if env and env.isdigit():
+        return int(env)
+    try:
+        with open(settings_path) as fh:
+            value = json.load(fh).get("autoCompactWindow")
+    except (OSError, ValueError, AttributeError):
+        return None
+    return value if isinstance(value, int) else None
 
 
 def analyse(root: str, days: int | None):
@@ -208,6 +222,7 @@ def analyse(root: str, days: int | None):
         "p90_context": contexts[int(0.9 * len(contexts))] if contexts else 0,
         "big_vs_small": (sum(big_turns) / len(big_turns)) / (sum(small_turns) / len(small_turns)) if big_turns and small_turns else None,
         "fresh_start_saving": min(fresh_start_saving / total, 0.95),
+        "compact_window": compact_window(),
         "blamed": {
             "subagents": subagents / total,
             "cache rebuilt after a break": idle_rebuilds / total,
@@ -236,6 +251,16 @@ def report(r: dict) -> str:
         f"  Median turn: {k(r['median_context'])} of context. One in ten: over {k(r['p90_context'])}.",
         "",
         f"  Starting fresh with a short summary at {k(BIG_CONTEXT)} would have saved about {pct(r['fresh_start_saving'])}.",
+    ]
+    window = r.get("compact_window")
+    if window and window <= BIG_CONTEXT:
+        lines.append(f"  Your autoCompactWindow is already {k(window)}, so new sessions compact before this point.")
+    elif r["big_context_share"] >= 0.3:
+        lines += [
+            f'  The fix is one setting: add "autoCompactWindow": {BIG_CONTEXT} to ~/.claude/settings.json',
+            "  (or use /autocompact). Claude Code then compacts at 200k instead of near the limit.",
+        ]
+    lines += [
         "",
         "  What people usually blame:",
         f"    re-reading the same file     {r['rereads'][0]} of {r['rereads'][1]} reads",

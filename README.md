@@ -20,6 +20,16 @@ My last 26 days:
 
 ![contexttax output: 76% of usage went to turns over 200k context; the biggest 10% of sessions used 90%](docs/screenshot.png)
 
+## The fix
+
+If most of your usage goes to long conversations, one setting changes it. Add this to `~/.claude/settings.json`:
+
+```json
+"autoCompactWindow": 200000
+```
+
+Claude Code then compacts at 200k instead of near the limit. Or use `/autocompact` to set it from a session. The trade-off: it summarises more often, so a very long task may lose some early detail. contexttax tells you when this applies to you, and when you've already set it.
+
 ## Private by design
 
 It reads the logs Claude Code already keeps in `~/.claude/projects`. It prints numbers only. It sends nothing anywhere and writes nothing. One file, standard library only, so you can read all of it first.

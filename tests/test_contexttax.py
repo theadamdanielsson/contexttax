@@ -60,6 +60,23 @@ class ContextTax(unittest.TestCase):
         self.assertTrue(out.endswith("Find yours: uvx contexttax"))
         self.assertNotIn("zzsecretzz", out)
 
+    def test_fix_line(self):
+        r = contexttax.analyse(self.dir, None)
+        r["compact_window"] = None
+        self.assertIn('"autoCompactWindow": 200000', contexttax.report(r))
+        r["compact_window"] = 150000
+        out = contexttax.report(r)
+        self.assertNotIn("The fix is one setting", out)
+        self.assertIn("already 150k", out)
+
+    def test_compact_window_reads_settings(self):
+        path = os.path.join(self.dir, "settings.json")
+        with open(path, "w") as f:
+            json.dump({"autoCompactWindow": 300000}, f)
+        os.environ.pop("CLAUDE_CODE_AUTO_COMPACT_WINDOW", None)
+        self.assertEqual(contexttax.compact_window(path), 300000)
+        self.assertIsNone(contexttax.compact_window(os.path.join(self.dir, "missing.json")))
+
     def test_missing_logs(self):
         self.assertEqual(contexttax.main(["--path", os.path.join(self.dir, "nope")]), 1)
 
