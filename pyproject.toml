@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "contexttax"
+version = "0.1.0"
+description = "Where your Claude Code usage actually goes. Reads local logs only."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [{ name = "Adam Danielsson" }]
+keywords = ["claude-code", "usage", "limits", "tokens", "context"]
+classifiers = ["Environment :: Console", "Programming Language :: Python :: 3"]
+
+[project.urls]
+Homepage = "https://github.com/theadamdanielsson/contexttax"
+
+[project.scripts]
+contexttax = "contexttax:main"
+
+[tool.setuptools]
+py-modules = ["contexttax"]
