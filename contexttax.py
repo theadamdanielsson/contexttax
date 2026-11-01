@@ -21,7 +21,7 @@ import sys
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 BIG_CONTEXT = 200_000  # where "long" starts in the report
 SUMMARY = 20_000  # tokens a fresh start would carry over
@@ -248,8 +248,22 @@ def report(r: dict) -> str:
         "  Models: " + ", ".join(f"{m} {pct(v)}" for m, v in r["models"].items() if v >= 0.005),
         "",
         "  Weighted by API prices. Read on this computer; nothing was sent anywhere.",
+        "  To share it: contexttax --share",
         "  github.com/theadamdanielsson/contexttax",
     ]
+    return "\n".join(lines)
+
+
+def share(r: dict) -> str:
+    """A few lines to paste anywhere, in the first person, ending with the command."""
+    lines = [
+        f"{pct(r['big_context_share'])} of my Claude Code usage went to turns where the conversation was already past {BIG_CONTEXT // 1000}k tokens.",
+        f"My biggest 10% of sessions used {pct(r['top_tenth_share'])}.",
+    ]
+    rereads, reads = r["rereads"]
+    if r["blamed"]["huge tool outputs"] < 0.05 and r["loops"] < 5 and (not reads or rereads / reads < 0.1):
+        lines.append("Re-reads, loops and huge tool outputs barely registered.")
+    lines.append("Find yours: uvx contexttax")
     return "\n".join(lines)
 
 
@@ -257,6 +271,7 @@ def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="contexttax", description="Where your Claude Code usage actually goes. Reads local logs only.")
     p.add_argument("--days", type=int, default=30, help="look back this many days (default 30; 0 = all)")
     p.add_argument("--json", action="store_true", help="print the numbers as JSON")
+    p.add_argument("--share", action="store_true", help="a few lines to paste anywhere")
     p.add_argument("--path", default=os.path.expanduser("~/.claude/projects"), help="where Claude Code keeps its logs")
     p.add_argument("--version", action="version", version=__version__)
     a = p.parse_args(argv)
@@ -267,7 +282,7 @@ def main(argv=None) -> int:
     if not r:
         print("No model calls found in those logs.", file=sys.stderr)
         return 1
-    print(json.dumps(r, indent=2) if a.json else report(r))
+    print(json.dumps(r, indent=2) if a.json else share(r) if a.share else report(r))
     return 0
 
 

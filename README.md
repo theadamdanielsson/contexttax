@@ -16,27 +16,9 @@ curl -fsSL https://raw.githubusercontent.com/theadamdanielsson/contexttax/main/c
 
 ## What it shows
 
-My last 27 days:
+My last 26 days:
 
-```
-contexttax · Claude Code · last 27 days · 316 sessions · 8,188 model calls
-
-  76% of your usage went to turns where the conversation was already over 200k tokens.
-  Your biggest 10% of sessions used 90%. One session alone used 14%.
-  A turn at 500k+ context costs 5.0x a turn at 50-100k.
-  Median turn: 255k of context. One in ten: over 604k.
-
-  Starting fresh with a short summary at 200k would have saved about 24%.
-
-  What people usually blame:
-    re-reading the same file     43 of 792 reads
-    loops (same call 3 times)    1
-    huge tool outputs            1%
-    subagents                    5%
-    cache rebuilt after a break  4%
-
-  Where it goes: cache reads 70%, cache writes 20%, output 10%
-```
+![contexttax output: 76% of usage went to turns over 200k context; the biggest 10% of sessions used 90%](docs/screenshot.png)
 
 ## Private by design
 
@@ -54,9 +36,19 @@ The fresh-start saving assumes each turn past 200k would instead carry a 20k sum
 contexttax --days 7     # last week
 contexttax --days 0     # everything in the logs
 contexttax --json       # the numbers as JSON
+contexttax --share      # a few lines to paste anywhere
 ```
 
 ## Share yours
+
+`contexttax --share` prints a few lines you can paste anywhere:
+
+```
+76% of my Claude Code usage went to turns where the conversation was already past 200k tokens.
+My biggest 10% of sessions used 90%.
+Re-reads, loops and huge tool outputs barely registered.
+Find yours: uvx contexttax
+```
 
 If your numbers look different from mine, I'd like to see them. Open an issue with the output.
 

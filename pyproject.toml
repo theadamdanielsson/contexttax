@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "contexttax"
-version = "0.1.0"
+version = "0.1.1"
 description = "Where your Claude Code usage actually goes. Reads local logs only."
 readme = "README.md"
 license = "MIT"

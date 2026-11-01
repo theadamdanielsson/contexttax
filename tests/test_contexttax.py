@@ -55,6 +55,11 @@ class ContextTax(unittest.TestCase):
         self.assertNotIn("/a.py", out)
         self.assertNotIn("zzsecretzz", out)
 
+    def test_share(self):
+        out = contexttax.share(contexttax.analyse(self.dir, None))
+        self.assertTrue(out.endswith("Find yours: uvx contexttax"))
+        self.assertNotIn("zzsecretzz", out)
+
     def test_missing_logs(self):
         self.assertEqual(contexttax.main(["--path", os.path.join(self.dir, "nope")]), 1)
 
